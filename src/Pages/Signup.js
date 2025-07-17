@@ -6,7 +6,7 @@ export default function Signup() {
   const navigate = useNavigate();
 
   // Local state for form inputs
-  const [profileName, setProfileName] = useState("");
+  const [name, setProfileName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,7 +21,7 @@ export default function Signup() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          profileName,
+          name,
           email,
           password,
         }),
@@ -73,7 +73,7 @@ export default function Signup() {
             placeholder="Enter your profile name"
             className="border border-gray-300 rounded px-4 py-2 mb-4"
             required
-            value={profileName}
+            value={name}
             onChange={(e) => setProfileName(e.target.value)}
           />
 
