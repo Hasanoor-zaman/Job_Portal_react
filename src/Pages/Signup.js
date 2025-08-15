@@ -15,7 +15,7 @@ export default function Signup() {
 
     try {
       // Example POST request to your backend API
-      const response = await fetch("https://your-backend-api.com/signup", {
+      const response = await fetch("http://localhost:8080/api/v1/customer/user_signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
