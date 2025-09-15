@@ -1,27 +1,28 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Login from "./Pages/Login";
-import Signup from "./Pages/Signup";
-import ForgotPassword from "./Pages/Forgotpassword";
-import TermsOfUse from "./Pages/Termsofuse";
-import Privatepolicy from "./Pages/Privatepolicy";
-import Dashboard from "./Pages/Dashboard";
+
+import AdminDashboard from "./AdminDashboard";
+import UsersPage from "./UsersPage";
+import JobsPage from "./JobsPage";
+import RecruiterPage from "./RecruiterPage";
 
 export default function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/forgotpassword" element={<ForgotPassword />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/signup" element={<Signup />} />
-        <Route path="/termsofuse" element={<TermsOfUse/>} />
-        <Route path="/privatepolicy" element={<Privatepolicy/>} />
+        {/* Dashboard */}
+        <Route path="/" element={<AdminDashboard />} />
+        <Route path="/admin" element={<AdminDashboard />} />
+
+        {/* Users */}
+        <Route path="/admin/users" element={<UsersPage />} />
+
+        {/* Jobs */}
+        <Route path="/admin/jobs" element={<JobsPage />} />
+
+        {/* Recruiter */}
+        <Route path="/admin/reports" element={<RecruiterPage />} />
       </Routes>
     </Router>
   );
 }
-
-
-
