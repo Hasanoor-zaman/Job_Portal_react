@@ -66,6 +66,10 @@ export default function RecruiterApplications() {
   const [videoCallOpen, setVideoCallOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [chatHistory, setChatHistory] = useState([]);
+  const [micOn, setMicOn] = useState(true);
+  const [camOn, setCamOn] = useState(true);
+  const [callSeconds, setCallSeconds] = useState(0);
+
 
   const [applications, setApplications] = useState([
     {
@@ -162,6 +166,80 @@ export default function RecruiterApplications() {
       { from: "ai", text: reply },
     ]);
   };
+  const localVideoRef = useRef(null);
+const remoteVideoRef = useRef(null);
+
+useEffect(() => {
+  if (!videoCallOpen) return;
+
+  let stream;
+
+  navigator.mediaDevices
+    .getUserMedia({ video: true, audio: true })
+    .then((mediaStream) => {
+      stream = mediaStream;
+
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = stream;
+      }
+
+      // Simulate remote user (for demo)
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream;
+      }
+    })
+    .catch((err) => {
+      console.error("Camera access denied:", err);
+    });
+
+
+  let timer;
+
+if (videoCallOpen) {
+  timer = setInterval(() => {
+    setCallSeconds((prev) => prev + 1);
+  }, 1000);
+}
+
+
+return () => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+    }
+    clearInterval(timer);
+  };
+
+}, [videoCallOpen]);
+
+const toggleMic = () => {
+  setMicOn((prev) => !prev);
+  if (localVideoRef.current?.srcObject) {
+    localVideoRef.current.srcObject
+      .getAudioTracks()
+      .forEach((track) => (track.enabled = !micOn));
+  }
+};
+
+const toggleCam = () => {
+  setCamOn((prev) => !prev);
+  if (localVideoRef.current?.srcObject) {
+    localVideoRef.current.srcObject
+      .getVideoTracks()
+      .forEach((track) => (track.enabled = !camOn));
+  }
+};
+
+const endCall = () => {
+  setVideoCallOpen(false);
+  setCallSeconds(0);
+
+  if (localVideoRef.current?.srcObject) {
+    localVideoRef.current.srcObject
+      .getTracks()
+      .forEach((track) => track.stop());
+  }
+};
+
 
   return (
     <div className="applications-container">
@@ -440,6 +518,57 @@ export default function RecruiterApplications() {
                 </button>
               </div>
             </div>
+            {videoCallOpen && selectedApp && (
+  <div className="video-panel">
+    <div className="video-header">
+      <h4>Video Call with {selectedApp.name}</h4>
+      <button
+        className="video-close-btn"
+        onClick={() => setVideoCallOpen(false)}
+      >
+        <X size={18} />
+      </button>
+    </div>
+
+    <div className="video-body">
+      <video
+  ref={remoteVideoRef}
+  className="remote-video"
+  autoPlay
+  playsInline
+></video>
+
+<video
+  ref={localVideoRef}
+  className="local-video"
+  autoPlay
+  playsInline
+  muted
+></video>
+
+    </div>
+    <div className="video-controls">
+  <span className="call-timer">
+    {Math.floor(callSeconds / 60)}:
+    {(callSeconds % 60).toString().padStart(2, "0")}
+  </span>
+
+  <button onClick={toggleMic}>
+    {micOn ? "Mute" : "Unmute"}
+  </button>
+
+  <button onClick={toggleCam}>
+    {camOn ? "Camera Off" : "Camera On"}
+  </button>
+
+  <button className="end-call" onClick={endCall}>
+    End Call
+  </button>
+</div>
+
+  </div>
+)}
+
           </div>
         </div>
       )}
@@ -455,9 +584,10 @@ export default function RecruiterApplications() {
               />
               <h4>Chat with {selectedApp.name}</h4>
             </div>
-            <button onClick={() => setChatOpen(false)}>
-              <X size={18} />
-            </button>
+            <button className="chat-close-btn" onClick={() => setChatOpen(false)}>
+  <X size={18} />
+</button>
+
           </div>
 
           <div className="chat-messages">

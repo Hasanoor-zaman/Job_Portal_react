@@ -521,3 +521,595 @@
 .cancel-btn:hover {
   background-color: #d1d5db;
 }
+
+
+/* ==================== NEW COLUMNS (DESCRIPTION, EXPERIENCE, SALARY, LOCATION) ==================== */
+.recruiter-table th.description,
+.recruiter-table td.description,
+.recruiter-table th.experience,
+.recruiter-table td.experience,
+.recruiter-table th.salary,
+.recruiter-table td.salary,
+.recruiter-table th.location,
+.recruiter-table td.location {
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+
+/* Description cell — ellipsis for long text */
+.recruiter-table td.description {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Location text styling */
+.recruiter-table td.location {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Salary styling */
+.recruiter-table td.salary {
+  color: #065f46;
+  font-weight: 600;
+}
+
+/* Experience styling */
+.recruiter-table td.experience {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* ==================== VIEW / EDIT MODALS ==================== */
+.view-modal-content,
+.edit-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.8rem;
+  width: 480px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease;
+}
+
+.view-section,
+.edit-section {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.view-section label {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.view-section span {
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+/* Edit form inputs */
+.edit-modal-content input,
+.edit-modal-content textarea,
+.edit-modal-content select {
+  padding: 0.55rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+}
+
+.edit-modal-content textarea {
+  height: 80px;
+  resize: vertical;
+}
+
+/* Modal footer buttons */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+/* View Job Close Button */
+.close-view-btn {
+  background-color: #e5e7eb;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+}
+
+.close-view-btn:hover {
+  background-color: #d1d5db;
+}
+
+/* ==================== DELETE CONFIRM MODAL ==================== */
+.delete-modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 360px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.25s ease;
+}
+
+.delete-modal-content h2 {
+  margin-bottom: 1rem;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.delete-modal-actions {
+  margin-top: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.delete-btn-confirm {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.delete-btn-confirm:hover {
+  background-color: #dc2626;
+}
+
+.cancel-delete-btn {
+  background-color: #e5e7eb;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.cancel-delete-btn:hover {
+  background-color: #d1d5db;
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  border: 1px solid #d1d5db;
+  padding: 0.4rem 0.75rem;
+}
+/* ==================== NEW COLUMNS (DESCRIPTION, EXPERIENCE, SALARY, LOCATION) ==================== */
+.recruiter-table th.description,
+.recruiter-table td.description,
+.recruiter-table th.experience,
+.recruiter-table td.experience,
+.recruiter-table th.salary,
+.recruiter-table td.salary,
+.recruiter-table th.location,
+.recruiter-table td.location {
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+
+/* Description cell — ellipsis for long text */
+.recruiter-table td.description {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Location text styling */
+.recruiter-table td.location {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Salary styling */
+.recruiter-table td.salary {
+  color: #065f46;
+  font-weight: 600;
+}
+
+/* Experience styling */
+.recruiter-table td.experience {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* ==================== VIEW / EDIT MODALS ==================== */
+.view-modal-content,
+.edit-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.8rem;
+  width: 480px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease;
+}
+
+.view-section,
+.edit-section {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.view-section label {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.view-section span {
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+/* Edit form inputs */
+.edit-modal-content input,
+.edit-modal-content textarea,
+.edit-modal-content select {
+  padding: 0.55rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+}
+
+.edit-modal-content textarea {
+  height: 80px;
+  resize: vertical;
+}
+
+/* Modal footer buttons */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+/* View Job Close Button */
+.close-view-btn {
+  background-color: #e5e7eb;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+}
+
+.close-view-btn:hover {
+  background-color: #d1d5db;
+}
+
+/* ==================== DELETE CONFIRM MODAL ==================== */
+.delete-modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 360px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.25s ease;
+}
+
+.delete-modal-content h2 {
+  margin-bottom: 1rem;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.delete-modal-actions {
+  margin-top: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.delete-btn-confirm {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.delete-btn-confirm:hover {
+  background-color: #dc2626;
+}
+
+.cancel-delete-btn {
+  background-color: #e5e7eb;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.cancel-delete-btn:hover {
+  background-color: #d1d5db;
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  border: 1px solid #d1d5db;
+  padding: 0.4rem 0.75rem;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.page-btn.active {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.page-btn:hover {
+  background-color: #f3f4f6;
+}
+
+/* ==================== SORT ICONS ==================== */
+.sort-btn {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #374151;
+  padding-left: 6px;
+}
+
+.sort-btn:hover {
+  color: #111827;
+}
+
+/* ==================== RESPONSIVE FIXES ==================== */
+@media (max-width: 900px) {
+  .recruiter-table th.description,
+  .recruiter-table td.description {
+    max-width: 150px;
+  }
+
+  .view-modal-content,
+  .edit-modal-content {
+    width: 90%;
+  }
+
+  .delete-modal-content {
+    width: 90%;
+  }
+}
+/* ==================== NEW COLUMNS (DESCRIPTION, EXPERIENCE, SALARY, LOCATION) ==================== */
+.recruiter-table th.description,
+.recruiter-table td.description,
+.recruiter-table th.experience,
+.recruiter-table td.experience,
+.recruiter-table th.salary,
+.recruiter-table td.salary,
+.recruiter-table th.location,
+.recruiter-table td.location {
+  white-space: nowrap;
+  padding-right: 1rem;
+}
+
+/* Description cell — ellipsis for long text */
+.recruiter-table td.description {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Location text styling */
+.recruiter-table td.location {
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Salary styling */
+.recruiter-table td.salary {
+  color: #065f46;
+  font-weight: 600;
+}
+
+/* Experience styling */
+.recruiter-table td.experience {
+  color: #1e40af;
+  font-weight: 600;
+}
+
+/* ==================== VIEW / EDIT MODALS ==================== */
+.view-modal-content,
+.edit-modal-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.8rem;
+  width: 480px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  animation: fadeIn 0.25s ease;
+}
+
+.view-section,
+.edit-section {
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.view-section label {
+  font-weight: 600;
+  color: #111827;
+  font-size: 0.9rem;
+}
+
+.view-section span {
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+/* Edit form inputs */
+.edit-modal-content input,
+.edit-modal-content textarea,
+.edit-modal-content select {
+  padding: 0.55rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  margin-top: 0.25rem;
+}
+
+.edit-modal-content textarea {
+  height: 80px;
+  resize: vertical;
+}
+
+/* Modal footer buttons */
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.8rem;
+  margin-top: 1rem;
+}
+
+/* View Job Close Button */
+.close-view-btn {
+  background-color: #e5e7eb;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  border: none;
+}
+
+.close-view-btn:hover {
+  background-color: #d1d5db;
+}
+
+/* ==================== DELETE CONFIRM MODAL ==================== */
+.delete-modal-content {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 12px;
+  width: 360px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+  animation: fadeIn 0.25s ease;
+}
+
+.delete-modal-content h2 {
+  margin-bottom: 1rem;
+  color: #b91c1c;
+  text-align: center;
+}
+
+.delete-modal-actions {
+  margin-top: 1.3rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.delete-btn-confirm {
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.delete-btn-confirm:hover {
+  background-color: #dc2626;
+}
+
+.cancel-delete-btn {
+  background-color: #e5e7eb;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.cancel-delete-btn:hover {
+  background-color: #d1d5db;
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination {
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.page-btn {
+  border: 1px solid #d1d5db;
+  padding: 0.4rem 0.75rem;
+  background: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.page-btn.active {
+  background-color: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+
+.page-btn:hover {
+  background-color: #f3f4f6;
+}
+
+/* ==================== SORT ICONS ==================== */
+.sort-btn {
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: #374151;
+  padding-left: 6px;
+}
+
+.sort-btn:hover {
+  color: #111827;
+}
+
+/* ==================== RESPONSIVE FIXES ==================== */
+@media (max-width: 900px) {
+  .recruiter-table th.description,
+  .recruiter-table td.description {
+    max-width: 150px;
+  }
+
+  .view-modal-content,
+  .edit-modal-content {
+    width: 90%;
+  }
+
+  .delete-modal-content {
+    width: 90%;
+  }
+}
+/* ==================== FIX: MODAL SCROLL ISSUE ==================== */
+
+/* Allow modal overlay to scroll if content overflows */
+.modal-overlay {
+  overflow-y: auto;
+}
+
+/* Restrict modal height and enable internal scrolling */
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
