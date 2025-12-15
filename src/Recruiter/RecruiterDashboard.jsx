@@ -1,70 +1,24 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "./RecruiterDashboard.css";
 import { Bell, Plus } from "lucide-react";
 
-// Inlined API helper (previously in src/Recruiter/api.js)
-const API_BASE = "https://demo-api.example.com/recruiter/jobs";
-
-async function handleResponse(res) {
-  const text = await res.text();
-  try {
-    const data = text ? JSON.parse(text) : null;
-    if (!res.ok) throw new Error(data?.message || res.statusText || 'API error');
-    return data;
-  } catch (err) {
-    if (!res.ok) throw new Error(res.statusText || 'API error');
-    return text;
-  }
-}
-
-async function getJobs() {
-  const res = await fetch(API_BASE, { method: 'GET' });
-  return handleResponse(res);
-}
-
-async function getJob(id) {
-  const res = await fetch(`${API_BASE}/${id}`, { method: 'GET' });
-  return handleResponse(res);
-}
-
-async function addJob(job) {
-  const res = await fetch(API_BASE, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(job),
-  });
-  return handleResponse(res);
-}
-
-async function updateJob(id, job) {
-  const res = await fetch(`${API_BASE}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(job),
-  });
-  return handleResponse(res);
-}
-
-async function deleteJob(id) {
-  const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
-  return handleResponse(res);
-}
-// import RecruiterProfile from "./RecruiterProfile/RecruiterProfile";
-
 export default function RecruiterDashboard() {
+  // UI state
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [locationFilter, setLocationFilter] = useState("All");
+  const [experienceFilter, setExperienceFilter] = useState("All");
+  const [sortBy, setSortBy] = useState({ key: "startDate", dir: "desc" });
+
+  // Dropdowns
   const [menuOpen, setMenuOpen] = useState(false);
   const [bellOpen, setBellOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
-  const [showAddJob, setShowAddJob] = useState(false);
 
-  const navigate = useNavigate();
-  const recruiterprofile = () => {
-    navigate("/recruiterprofile");
-  };
+  // Modals
+  const [showAddJob, setShowAddJob] = useState(false);
 
   const profileRef = useRef(null);
   const bellRef = useRef(null);
@@ -81,37 +35,38 @@ export default function RecruiterDashboard() {
     { id: 3, text: "New Message from Applicant", time: "3d ago" },
   ];
 
-  // Jobs loaded from API
-  const [jobData, setJobData] = useState([]);
-  const [viewJob, setViewJob] = useState(null);
+  // Load job data from localStorage or use defaults
+  const [jobData, setJobData] = useState(() => {
+    const savedJobs = localStorage.getItem("recruiterJobs");
+    if (savedJobs) return JSON.parse(savedJobs);
+    return [
+      { id: 1, jobName: "Software Engineer", applications: 35, status: "Active", startDate: "2024-07-01", endDate: "2024-08-01" },
+      { id: 2, jobName: "Frontend Developer", applications: 20, status: "Pending", startDate: "2024-07-15", endDate: "2024-08-15" },
+      { id: 3, jobName: "Data Analyst", applications: 50, status: "Active", startDate: "2024-06-20", endDate: "2024-07-20" },
+      { id: 4, jobName: "UX Designer", applications: 10, status: "Suspended", startDate: "2024-07-10", endDate: "2024-08-10" },
+      { id: 5, jobName: "Backend Developer", applications: 42, status: "Active", startDate: "2024-07-18", endDate: "2024-08-18" },
+    ];
+  });
 
-  // Fetch jobs from API on mount
+  // Save jobs to localStorage whenever jobData changes
   useEffect(() => {
-    let mounted = true;
-    const fetchJobs = async () => {
-      try {
-        const jobs = await getJobs();
-        if (mounted) setJobData(Array.isArray(jobs) ? jobs : []);
-      } catch (err) {
-        console.error('Failed to fetch jobs', err);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-    fetchJobs();
-    return () => {
-      mounted = false;
-    };
+    localStorage.setItem("recruiterJobs", JSON.stringify(jobData));
+  }, [jobData]);
+
+  // Loading simulation
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1500);
+    return () => clearTimeout(timer);
   }, []);
 
-  // Close dropdowns when clicking outside
+  // click outside to close dropdowns
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutside = (e) => {
       if (
         profileRef.current &&
-        !profileRef.current.contains(event.target) &&
+        !profileRef.current.contains(e.target) &&
         bellRef.current &&
-        !bellRef.current.contains(event.target)
+        !bellRef.current.contains(e.target)
       ) {
         setMenuOpen(false);
         setBellOpen(false);
@@ -121,89 +76,109 @@ export default function RecruiterDashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
-    console.log("User signed out");
-  };
+  // Filtering + searching + sorting
+  const filtered = useMemo(() => {
+    let list = jobData.slice();
 
-  const handleBellClick = () => {
-    setBellOpen(!bellOpen);
-    setHasUnread(false);
-  };
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(
+        (j) =>
+          j.jobName.toLowerCase().includes(q) ||
+          (j.description || "").toLowerCase().includes(q) ||
+          (j.location || "").toLowerCase().includes(q)
+      );
+    }
 
-  const filteredJobs = jobData.filter((job) => {
-    const matchesSearch = job.jobName.toLowerCase().includes(search.toLowerCase());
-    const matchesFilter = filter === "All" || job.status.toLowerCase() === filter.toLowerCase();
-    return matchesSearch && matchesFilter;
-  });
+    if (statusFilter !== "All") list = list.filter((j) => j.status === statusFilter);
+    if (locationFilter !== "All") list = list.filter((j) => j.location === locationFilter);
+    if (experienceFilter !== "All") list = list.filter((j) => j.experience === experienceFilter);
 
-  // Add Job Form State
-  const [newJob, setNewJob] = useState({
+    // sort
+    list.sort((a, b) => {
+      const { key, dir } = sortBy;
+      let av = a[key];
+      let bv = b[key];
+
+      if (key === "applications") {
+        av = Number(av);
+        bv = Number(bv);
+      }
+
+      if (key.toLowerCase().includes("date")) {
+        av = new Date(av);
+        bv = new Date(bv);
+      }
+
+      if (av < bv) return dir === "asc" ? -1 : 1;
+      if (av > bv) return dir === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return list;
+  }, [jobData, search, statusFilter, locationFilter, experienceFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+  const paginated = filtered.slice((page - 1) * perPage, page * perPage);
+
+  // derived lists for filter dropdowns
+  //const locations = useMemo(() => ["All", ...Array.from(new Set(jobData.map((j) => j.location || "")))], [jobData]);
+  //const experiences = useMemo(() => ["All", ...Array.from(new Set(jobData.map((j) => j.experience || "")))], [jobData]);
+
+  // Job forms state (optional fields: description, experience, salary, location)
+  const emptyJob = {
     jobName: "",
+    description: "",
+    experience: "",
+    salary: "",
+    location: "",
     applications: 0,
     status: "Active",
     startDate: "",
     endDate: "",
-  });
+  };
 
-  const handleAddJob = (e) => {
+  const [formJob, setFormJob] = useState(emptyJob);
+
+  const openEdit = (job) => {
+    setJobToEdit(job);
+    setFormJob({ ...job });
+    setShowEditJob(true);
+  };
+
+  const openView = (job) => {
+    setJobToView(job);
+    setShowViewJob(true);
+  };
+
+  const openDelete = (job) => {
+    setJobToDelete(job);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleAddSubmit = (e) => {
     e.preventDefault();
-    if (!newJob.jobName || !newJob.startDate || !newJob.endDate) {
-      alert("Please fill in all required fields.");
+    // required fields: jobName, startDate, endDate
+    if (!formJob.jobName.trim() || !formJob.startDate || !formJob.endDate) {
+      alert("Please fill Job Name, Start Date and End Date.");
       return;
     }
-    (async () => {
-      try {
-        const payload = { ...newJob, applications: Number(newJob.applications || 0) };
-        const created = await addJob(payload);
-        // expect API to return created object with id
-        setJobData((prev) => [...prev, created || payload]);
-        setShowAddJob(false);
-        setNewJob({ jobName: "", applications: 0, status: "Active", startDate: "", endDate: "" });
-      } catch (err) {
-        console.error('Add job failed', err);
-        alert('Failed to add job. Check console for details.');
-      }
-    })();
+
+    const newEntry = {
+      id: Date.now(), // unique ID
+      ...newJob,
+      applications: Number(newJob.applications || 0),
+    };
+
+    setJobData((prev) => [...prev, newEntry]);
+    setShowAddJob(false);
+    setNewJob({ jobName: "", applications: 0, status: "Active", startDate: "", endDate: "" });
   };
 
   const handleDeleteJob = (id) => {
-    if (!window.confirm("Are you sure you want to delete this job?")) return;
-    (async () => {
-      try {
-        await deleteJob(id);
-        setJobData((prev) => prev.filter((job) => job.id !== id));
-      } catch (err) {
-        console.error('Delete failed', err);
-        alert('Failed to delete job. Check console for details.');
-      }
-    })();
-  };
-
-  const handleViewJob = async (id) => {
-    try {
-      const job = await getJob(id);
-      setViewJob(job);
-    } catch (err) {
-      console.error('View job failed', err);
-      alert('Failed to load job details.');
+    if (window.confirm("Are you sure you want to delete this job?")) {
+      setJobData(jobData.filter((job) => job.id !== id));
     }
-  };
-
-  const handleEditJob = (id) => {
-    const existing = jobData.find((j) => j.id === id);
-    if (!existing) return alert('Job not found');
-    const newName = window.prompt('Edit job name:', existing.jobName);
-    if (newName === null) return; // cancelled
-    const updated = { ...existing, jobName: newName };
-    (async () => {
-      try {
-        const res = await updateJob(id, updated);
-        setJobData((prev) => prev.map((j) => (j.id === id ? (res || updated) : j)));
-      } catch (err) {
-        console.error('Update failed', err);
-        alert('Failed to update job.');
-      }
-    })();
   };
 
   return (
@@ -218,11 +193,16 @@ export default function RecruiterDashboard() {
         </nav>
 
         <div className="nav-right">
-          {/* Bell Icon */}
           <div className="bell-container" ref={bellRef}>
-            <button className="bell-btn" onClick={handleBellClick}>
+            <button
+              className="bell-btn"
+              onClick={() => {
+                setBellOpen((b) => !b);
+                setHasUnread(false);
+              }}
+            >
               <Bell size={22} />
-              {hasUnread && <span className="bell-dot"></span>}
+              {hasUnread && <span className="bell-dot" />}
             </button>
 
             {bellOpen && (
@@ -242,9 +222,8 @@ export default function RecruiterDashboard() {
             )}
           </div>
 
-          {/* Profile Dropdown */}
           <div className="profile-menu" ref={profileRef}>
-            <div className="profile-avatar" onClick={() => setMenuOpen(!menuOpen)}>
+            <div className="profile-avatar" onClick={() => setMenuOpen((m) => !m)}>
               <img src={user.profilePic} alt="Profile" className="avatar-img" />
               <span className={`arrow ${menuOpen ? "open" : ""}`}>▼</span>
             </div>
@@ -259,7 +238,7 @@ export default function RecruiterDashboard() {
                   </div>
                 </div>
                 <div className="profile-actions">
-                  <button onClick={recruiterprofile} className="dropdown-btn">View Profile</button>
+                  <button className="dropdown-btn">Edit Profile</button>
                   <button className="dropdown-btn logout" onClick={handleLogout}>
                     Sign Out
                   </button>
@@ -270,35 +249,75 @@ export default function RecruiterDashboard() {
         </div>
       </header>
 
-      {/* Main Dashboard */}
+      {/* Main */}
       <main className="dashboard">
-        {loading ? (
-          <div className="loading-spinner">
-            <div className="spinner"></div>
-            <p>Loading recruiter dashboard...</p>
+        <div className="table-header">
+          <h3>Job Management</h3>
+
+          <div className="table-controls">
+            <input
+              type="text"
+              placeholder="Search jobs, description or location..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+            />
+
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Pending">Pending</option>
+              <option value="Suspended">Suspended</option>
+            </select>
+
+            <select
+              value={locationFilter}
+              onChange={(e) => {
+                setLocationFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="All">All</option>
+              <option value="Remote">Remote</option>
+              <option value="Pune">Pune</option>
+              <option value="Mumbai">Mumbai</option>
+              <option value="Hyderabad">Hyderabad</option>
+              <option value="Bangalore">Bangalore</option>
+            </select>
+
+            <select
+              value={experienceFilter}
+              onChange={(e) => {
+                setExperienceFilter(e.target.value);
+                setPage(1);
+              }}
+            >
+              <option value="All">All</option>
+              <option value="0-1 years">0-1 years</option>
+              <option value="2-4 years">2-4 years</option>
+              <option value="5+ years">5+ years</option>
+            </select>
+
+
+            <button
+              className="add-job-btn"
+              onClick={() => {
+                setFormJob(emptyJob);
+                setShowAddJob(true);
+              }}
+            >
+              <Plus size={16} /> Add Job
+            </button>
           </div>
-        ) : (
-          <>
-            <div className="table-header">
-              <h3>Job Management</h3>
-              <div className="table-controls">
-                <input
-                  type="text"
-                  placeholder="Search by job name..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
-                <select value={filter} onChange={(e) => setFilter(e.target.value)}>
-                  <option value="All">All</option>
-                  <option value="Active">Active</option>
-                  <option value="Pending">Pending</option>
-                  <option value="Suspended">Suspended</option>
-                </select>
-                <button className="add-job-btn" onClick={() => setShowAddJob(true)}>
-                  <Plus size={18} /> Add Job
-                </button>
-              </div>
-            </div>
+        </div>
 
             <div className="table-wrapper">
               <table className="recruiter-table">
@@ -323,8 +342,8 @@ export default function RecruiterDashboard() {
                       <td>{job.startDate}</td>
                       <td>{job.endDate}</td>
                       <td className="action-buttons">
-                        <button className="view-btn" onClick={() => handleViewJob(job.id)}>View</button>
-                        <button className="edit-btn" onClick={() => handleEditJob(job.id)}>Edit</button>
+                        <button className="view-btn">View</button>
+                        <button className="edit-btn">Edit</button>
                         <button className="delete-btn" onClick={() => handleDeleteJob(job.id)}>
                           Delete
                         </button>
@@ -334,9 +353,15 @@ export default function RecruiterDashboard() {
                 </tbody>
               </table>
 
-              {filteredJobs.length === 0 && <p className="no-results">No jobs found.</p>}
+            {filtered.length === 0 && <p className="no-results">No jobs match your criteria.</p>}
+
+            {/* Pagination controls */}
+            <div className="pagination">
+              <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Prev</button>
+              <span>Page {page} of {totalPages}</span>
+              <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={page === totalPages}>Next</button>
             </div>
-          </>
+          </div>
         )}
       </main>
 
@@ -362,32 +387,45 @@ export default function RecruiterDashboard() {
         <div className="modal-overlay">
           <div className="modal-content">
             <h3>Add New Job</h3>
-            <form onSubmit={handleAddJob}>
+            <form onSubmit={handleAddSubmit}>
               <label>
                 Job Name <span>*</span>
                 <input
                   type="text"
-                  value={newJob.jobName}
-                  onChange={(e) => setNewJob({ ...newJob, jobName: e.target.value })}
+                  value={formJob.jobName}
+                  onChange={(e) => setFormJob({ ...formJob, jobName: e.target.value })}
                   required
                 />
               </label>
 
               <label>
+                Description
+                <textarea rows={3} value={formJob.description} onChange={(e) => setFormJob({ ...formJob, description: e.target.value })} />
+              </label>
+
+              <label>
+                Experience
+                <input type="text" value={formJob.experience} onChange={(e) => setFormJob({ ...formJob, experience: e.target.value })} />
+              </label>
+
+              <label>
+                Salary
+                <input type="text" value={formJob.salary} onChange={(e) => setFormJob({ ...formJob, salary: e.target.value })} />
+              </label>
+
+              <label>
+                Location
+                <input type="text" value={formJob.location} onChange={(e) => setFormJob({ ...formJob, location: e.target.value })} />
+              </label>
+
+              <label>
                 Applications
-                <input
-                  type="number"
-                  value={newJob.applications}
-                  onChange={(e) => setNewJob({ ...newJob, applications: e.target.value })}
-                />
+                <input type="number" value={formJob.applications} onChange={(e) => setFormJob({ ...formJob, applications: e.target.value })} />
               </label>
 
               <label>
                 Status
-                <select
-                  value={newJob.status}
-                  onChange={(e) => setNewJob({ ...newJob, status: e.target.value })}
-                >
+                <select value={formJob.status} onChange={(e) => setFormJob({ ...formJob, status: e.target.value })}>
                   <option value="Active">Active</option>
                   <option value="Pending">Pending</option>
                   <option value="Suspended">Suspended</option>
@@ -396,34 +434,132 @@ export default function RecruiterDashboard() {
 
               <label>
                 Start Date <span>*</span>
-                <input
-                  type="date"
-                  value={newJob.startDate}
-                  onChange={(e) => setNewJob({ ...newJob, startDate: e.target.value })}
-                  required
-                />
+                <input type="date" value={formJob.startDate} onChange={(e) => setFormJob({ ...formJob, startDate: e.target.value })} required />
               </label>
 
               <label>
                 End Date <span>*</span>
-                <input
-                  type="date"
-                  value={newJob.endDate}
-                  onChange={(e) => setNewJob({ ...newJob, endDate: e.target.value })}
-                  required
-                />
+                <input type="date" value={formJob.endDate} onChange={(e) => setFormJob({ ...formJob, endDate: e.target.value })} required />
               </label>
 
               <div className="modal-actions">
                 <button type="submit" className="save-btn">Add Job</button>
-                <button type="button" className="cancel-btn" onClick={() => setShowAddJob(false)}>
-                  Cancel
-                </button>
+                <button type="button" className="cancel-btn" onClick={() => setShowAddJob(false)}>Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Job Modal */}
+      {showEditJob && (
+  <div 
+    className="modal-overlay"
+    onClick={() => setShowEditJob(false)}
+    onKeyDown={(e) => e.key === "Escape" && setShowEditJob(false)}
+    tabIndex={0}
+  >
+    <div 
+      className="modal-content"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <h3>Edit Job</h3>
+
+      <form onSubmit={handleEditSubmit}>
+        <label>
+          Job Name <span>*</span>
+          <input type="text" value={formJob.jobName} onChange={(e) => setFormJob({ ...formJob, jobName: e.target.value })} required />
+        </label>
+
+        <label>
+          Description
+          <textarea rows={3} value={formJob.description} onChange={(e) => setFormJob({ ...formJob, description: e.target.value })} />
+        </label>
+
+        <label>
+          Experience
+          <input type="text" value={formJob.experience} onChange={(e) => setFormJob({ ...formJob, experience: e.target.value })} />
+        </label>
+
+        <label>
+          Salary
+          <input type="text" value={formJob.salary} onChange={(e) => setFormJob({ ...formJob, salary: e.target.value })} />
+        </label>
+
+        <label>
+          Location
+          <input type="text" value={formJob.location} onChange={(e) => setFormJob({ ...formJob, location: e.target.value })} />
+        </label>
+
+        <label>
+          Applications
+          <input type="number" value={formJob.applications} onChange={(e) => setFormJob({ ...formJob, applications: e.target.value })} />
+        </label>
+
+        <label>
+          Status
+          <select value={formJob.status} onChange={(e) => setFormJob({ ...formJob, status: e.target.value })}>
+            <option value="Active">Active</option>
+            <option value="Pending">Pending</option>
+            <option value="Suspended">Suspended</option>
+          </select>
+        </label>
+
+        <label>
+          Start Date <span>*</span>
+          <input type="date" value={formJob.startDate} onChange={(e) => setFormJob({ ...formJob, startDate: e.target.value })} required />
+        </label>
+
+        <label>
+          End Date <span>*</span>
+          <input type="date" value={formJob.endDate} onChange={(e) => setFormJob({ ...formJob, endDate: e.target.value })} required />
+        </label>
+
+        <div className="modal-actions">
+          <button type="submit" className="save-btn">Save Changes</button>
+          <button type="button" className="cancel-btn" onClick={() => setShowEditJob(false)}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+)}
+
+
+      {/* View Job Modal */}
+      {showViewJob && jobToView && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>{jobToView.jobName}</h3>
+            <p><strong>Description:</strong> {jobToView.description || "—"}</p>
+            <p><strong>Experience:</strong> {jobToView.experience || "—"}</p>
+            <p><strong>Salary:</strong> {jobToView.salary || "—"}</p>
+            <p><strong>Location:</strong> {jobToView.location || "—"}</p>
+            <p><strong>Applications:</strong> {jobToView.applications}</p>
+            <p><strong>Status:</strong> <span className={`status-badge ${jobToView.status.toLowerCase()}`}>{jobToView.status}</span></p>
+            <p><strong>Start:</strong> {jobToView.startDate} &nbsp; <strong>End:</strong> {jobToView.endDate}</p>
+
+            <div className="modal-actions">
+              <button className="save-btn" onClick={() => setShowViewJob(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirm Modal */}
+      {showDeleteConfirm && jobToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Confirm Delete</h3>
+            <p>Are you sure you want to delete <strong>{jobToDelete.jobName}</strong>?</p>
+            <div className="modal-actions">
+              <button className="delete-btn" onClick={handleConfirmDelete}>Delete</button>
+              <button className="cancel-btn" onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
     </div>
   );
 }
+
+
