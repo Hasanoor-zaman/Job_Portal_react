@@ -1,7 +1,56 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./RecruiterDashboard.css";
 import { Bell, Plus } from "lucide-react";
+
+// Inlined API helper (previously in src/Recruiter/api.js)
+const API_BASE = "https://demo-api.example.com/recruiter/jobs";
+
+async function handleResponse(res) {
+  const text = await res.text();
+  try {
+    const data = text ? JSON.parse(text) : null;
+    if (!res.ok) throw new Error(data?.message || res.statusText || 'API error');
+    return data;
+  } catch (err) {
+    if (!res.ok) throw new Error(res.statusText || 'API error');
+    return text;
+  }
+}
+
+async function getJobs() {
+  const res = await fetch(API_BASE, { method: 'GET' });
+  return handleResponse(res);
+}
+
+async function getJob(id) {
+  const res = await fetch(`${API_BASE}/${id}`, { method: 'GET' });
+  return handleResponse(res);
+}
+
+async function addJob(job) {
+  const res = await fetch(API_BASE, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(job),
+  });
+  return handleResponse(res);
+}
+
+async function updateJob(id, job) {
+  const res = await fetch(`${API_BASE}/${id}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(job),
+  });
+  return handleResponse(res);
+}
+
+async function deleteJob(id) {
+  const res = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' });
+  return handleResponse(res);
+}
+// import RecruiterProfile from "./RecruiterProfile/RecruiterProfile";
 
 export default function RecruiterDashboard() {
   const [loading, setLoading] = useState(true);
@@ -11,6 +60,11 @@ export default function RecruiterDashboard() {
   const [bellOpen, setBellOpen] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [showAddJob, setShowAddJob] = useState(false);
+
+  const navigate = useNavigate();
+  const recruiterprofile = () => {
+    navigate("/recruiterprofile");
+  };
 
   const profileRef = useRef(null);
   const bellRef = useRef(null);
@@ -27,28 +81,27 @@ export default function RecruiterDashboard() {
     { id: 3, text: "New Message from Applicant", time: "3d ago" },
   ];
 
-  // Load job data from localStorage or use defaults
-  const [jobData, setJobData] = useState(() => {
-    const savedJobs = localStorage.getItem("recruiterJobs");
-    if (savedJobs) return JSON.parse(savedJobs);
-    return [
-      { id: 1, jobName: "Software Engineer", applications: 35, status: "Active", startDate: "2024-07-01", endDate: "2024-08-01" },
-      { id: 2, jobName: "Frontend Developer", applications: 20, status: "Pending", startDate: "2024-07-15", endDate: "2024-08-15" },
-      { id: 3, jobName: "Data Analyst", applications: 50, status: "Active", startDate: "2024-06-20", endDate: "2024-07-20" },
-      { id: 4, jobName: "UX Designer", applications: 10, status: "Suspended", startDate: "2024-07-10", endDate: "2024-08-10" },
-      { id: 5, jobName: "Backend Developer", applications: 42, status: "Active", startDate: "2024-07-18", endDate: "2024-08-18" },
-    ];
-  });
+  // Jobs loaded from API
+  const [jobData, setJobData] = useState([]);
+  const [viewJob, setViewJob] = useState(null);
 
-  // Save jobs to localStorage whenever jobData changes
+  // Fetch jobs from API on mount
   useEffect(() => {
-    localStorage.setItem("recruiterJobs", JSON.stringify(jobData));
-  }, [jobData]);
-
-  // Loading simulation
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
+    let mounted = true;
+    const fetchJobs = async () => {
+      try {
+        const jobs = await getJobs();
+        if (mounted) setJobData(Array.isArray(jobs) ? jobs : []);
+      } catch (err) {
+        console.error('Failed to fetch jobs', err);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+    fetchJobs();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Close dropdowns when clicking outside
@@ -98,22 +151,59 @@ export default function RecruiterDashboard() {
       alert("Please fill in all required fields.");
       return;
     }
-
-    const newEntry = {
-      id: Date.now(), // unique ID
-      ...newJob,
-      applications: Number(newJob.applications || 0),
-    };
-
-    setJobData((prev) => [...prev, newEntry]);
-    setShowAddJob(false);
-    setNewJob({ jobName: "", applications: 0, status: "Active", startDate: "", endDate: "" });
+    (async () => {
+      try {
+        const payload = { ...newJob, applications: Number(newJob.applications || 0) };
+        const created = await addJob(payload);
+        // expect API to return created object with id
+        setJobData((prev) => [...prev, created || payload]);
+        setShowAddJob(false);
+        setNewJob({ jobName: "", applications: 0, status: "Active", startDate: "", endDate: "" });
+      } catch (err) {
+        console.error('Add job failed', err);
+        alert('Failed to add job. Check console for details.');
+      }
+    })();
   };
 
   const handleDeleteJob = (id) => {
-    if (window.confirm("Are you sure you want to delete this job?")) {
-      setJobData(jobData.filter((job) => job.id !== id));
+    if (!window.confirm("Are you sure you want to delete this job?")) return;
+    (async () => {
+      try {
+        await deleteJob(id);
+        setJobData((prev) => prev.filter((job) => job.id !== id));
+      } catch (err) {
+        console.error('Delete failed', err);
+        alert('Failed to delete job. Check console for details.');
+      }
+    })();
+  };
+
+  const handleViewJob = async (id) => {
+    try {
+      const job = await getJob(id);
+      setViewJob(job);
+    } catch (err) {
+      console.error('View job failed', err);
+      alert('Failed to load job details.');
     }
+  };
+
+  const handleEditJob = (id) => {
+    const existing = jobData.find((j) => j.id === id);
+    if (!existing) return alert('Job not found');
+    const newName = window.prompt('Edit job name:', existing.jobName);
+    if (newName === null) return; // cancelled
+    const updated = { ...existing, jobName: newName };
+    (async () => {
+      try {
+        const res = await updateJob(id, updated);
+        setJobData((prev) => prev.map((j) => (j.id === id ? (res || updated) : j)));
+      } catch (err) {
+        console.error('Update failed', err);
+        alert('Failed to update job.');
+      }
+    })();
   };
 
   return (
@@ -169,7 +259,7 @@ export default function RecruiterDashboard() {
                   </div>
                 </div>
                 <div className="profile-actions">
-                  <button className="dropdown-btn">Edit Profile</button>
+                  <button onClick={recruiterprofile} className="dropdown-btn">View Profile</button>
                   <button className="dropdown-btn logout" onClick={handleLogout}>
                     Sign Out
                   </button>
@@ -233,8 +323,8 @@ export default function RecruiterDashboard() {
                       <td>{job.startDate}</td>
                       <td>{job.endDate}</td>
                       <td className="action-buttons">
-                        <button className="view-btn">View</button>
-                        <button className="edit-btn">Edit</button>
+                        <button className="view-btn" onClick={() => handleViewJob(job.id)}>View</button>
+                        <button className="edit-btn" onClick={() => handleEditJob(job.id)}>Edit</button>
                         <button className="delete-btn" onClick={() => handleDeleteJob(job.id)}>
                           Delete
                         </button>
@@ -249,6 +339,23 @@ export default function RecruiterDashboard() {
           </>
         )}
       </main>
+
+      {/* View Job Modal (from API) */}
+      {viewJob && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h3>Job Details</h3>
+            <p><strong>{viewJob.jobName}</strong></p>
+            <p>Applications: {viewJob.applications}</p>
+            <p>Status: {viewJob.status}</p>
+            <p>Start Date: {viewJob.startDate}</p>
+            <p>End Date: {viewJob.endDate}</p>
+            <div className="modal-actions">
+              <button onClick={() => setViewJob(null)} className="cancel-btn">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Add Job Modal */}
       {showAddJob && (
